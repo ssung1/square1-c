@@ -9,7 +9,9 @@ typedef struct {
     Shape shape;
     BlockColor faceColor;
     BlockColor sideColor1;
-    BlockColor sideColor2;
+    const BlockColor *sideColor2;
 } Block;
+
+const char *blockToString(const Block *block);
 
 #endif

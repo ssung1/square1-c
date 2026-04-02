@@ -4,11 +4,15 @@
 #include "block.h"
 
 int main(void) {
-    BlockColor color = BLOCK_COLOR_WHITE;
-    Shape shape = SHAPE_TRIANGLE;
-    Block block = {.position = 0, .shape = SHAPE_TRIANGLE, .faceColor = BLOCK_COLOR_WHITE, .sideColor1 = BLOCK_COLOR_GREEN, .sideColor2 = BLOCK_COLOR_BLUE};
-    (void)color;
-    (void)shape;
-    (void)block;
+    static const BlockColor sideColor2 = BLOCK_COLOR_BLUE;
+    Block block = {
+        .position = 0,
+        .shape = SHAPE_TRIANGLE,
+        .faceColor = BLOCK_COLOR_WHITE,
+        .sideColor1 = BLOCK_COLOR_GREEN,
+        .sideColor2 = &sideColor2
+    };
+
+    printf("%s\n", blockToString(&block));
     return 0;
 }
