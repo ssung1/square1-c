@@ -1,9 +1,4 @@
-# shape-enum-definition Specification
-
-## Purpose
-Defines the Shape and Geometry types used to describe block geometry in the project. Shape was originally a plain enum; this spec reflects the migrated model using a Geometry enum, a Shape struct, and two exported shape constants.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Project SHALL define Shape and Geometry in dedicated files
 The project SHALL define a `Geometry` enum and a `Shape` structure in `shape.h`, and define shape constants in `shape.c`.
@@ -36,4 +31,3 @@ The Shape and Geometry declarations and constants SHALL be available for reuse b
 #### Scenario: Shape model is available to other compilation units
 - **WHEN** another module includes `shape.h` and references `Shape`, `Geometry`, or shape constants
 - **THEN** the project compiles without requiring duplicated declarations
-

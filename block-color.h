@@ -11,5 +11,6 @@ typedef enum {
 } BlockColor;
 
 const char *blockColorToString(BlockColor color);
+BlockColor stringToBlockColor(const char *symbol);
 
 #endif /* BLOCK_COLOR_H */

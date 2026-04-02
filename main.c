@@ -2,6 +2,7 @@
 #include "block-color.h"
 #include "shape.h"
 #include "block.h"
+#include "cube-face.h"
 
 int main(void) {
     static const BlockColor sideColor2 = BLOCK_COLOR_BLUE;
