@@ -13,6 +13,6 @@
 
 ## 3. Validate Workflow
 
-- [ ] 3.1 Run make for the main binary and confirm successful build
-- [ ] 3.2 Run make unit-test and confirm successful test binary build
-- [ ] 3.3 Run make test and confirm test execution returns appropriate exit status
+- [x] 3.1 Run make for the main binary and confirm successful build
+- [x] 3.2 Run make unit-test and confirm successful test binary build
+- [x] 3.3 Run make test and confirm test execution returns appropriate exit status
