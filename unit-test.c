@@ -3,8 +3,32 @@
 #include <string.h>
 
 #include "block.h"
+#include "cube.h"
 #include "cube-face.h"
 #include "shape.h"
+
+static char *duplicateStringForTest(const char *text) {
+    size_t len = strlen(text);
+    char *copy = malloc(len + 1);
+
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    memcpy(copy, text, len + 1);
+    return copy;
+}
+
+static void freeCubeForTest(Cube *cube) {
+    if (cube == NULL) {
+        return;
+    }
+
+    free(cube->topFace);
+    free(cube->bottomFace);
+    free(cube->history);
+    free(cube);
+}
 
 static int assertEqual(const char *name, const char *expected, const char *actual) {
     if (strcmp(expected, actual) == 0) {
@@ -246,6 +270,48 @@ int main(void) {
         ++totalTests; passCount += assertEqual("cubeFaceToString empty string", "", emptyStr);
         free(emptyFace);
     }
+
+    /* --- cubeFromString: successful construction from two face strings --- */
+    Cube *cube = cubeFromString("wg rob", "wgb ro");
+    ++totalTests; passCount += assertNotNull("cubeFromString returns cube", cube);
+    if (cube != NULL) {
+        ++totalTests; passCount += assertNotNull("cube top face not NULL", cube->topFace);
+        ++totalTests; passCount += assertNotNull("cube bottom face not NULL", cube->bottomFace);
+        ++totalTests; passCount += assertNotNull("cube history not NULL", cube->history);
+        if (cube->history != NULL) {
+            ++totalTests; passCount += assertEqual("cube history initialized empty", "", cube->history);
+        }
+
+        freeCubeForTest(cube);
+    }
+
+    /* --- cubeFromString: invalid face input returns NULL --- */
+    Cube *invalidCube = cubeFromString("wg", "x");
+    ++totalTests; passCount += assertNull("cubeFromString invalid input returns NULL", invalidCube);
+
+    /* --- cubeToString: outputs history, top, bottom lines in order --- */
+    Cube *cubeForString = cubeFromString("wg rob", "wgb ro");
+    ++totalTests; passCount += assertNotNull("cube for toString not NULL", cubeForString);
+    if (cubeForString != NULL) {
+        char *history = duplicateStringForTest("U");
+        ++totalTests; passCount += assertNotNull("history allocation for test", history);
+        if (history != NULL) {
+            free(cubeForString->history);
+            cubeForString->history = history;
+
+            const char *cubeString = cubeToString(cubeForString);
+            ++totalTests; passCount += assertNotNull("cubeToString returns non-NULL", cubeString);
+            if (cubeString != NULL) {
+                ++totalTests; passCount += assertEqual("cubeToString line ordering", "U\nwg rob\nwgb ro", cubeString);
+            }
+        }
+
+        freeCubeForTest(cubeForString);
+    }
+
+    /* --- cubeToString: NULL cube returns NULL --- */
+    const char *nullCubeStr = cubeToString(NULL);
+    ++totalTests; passCount += assertNull("cubeToString NULL returns NULL", nullCubeStr);
 
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 

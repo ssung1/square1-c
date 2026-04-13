@@ -3,11 +3,13 @@
 #include "shape.h"
 #include "block.h"
 #include "cube-face.h"
+#include "cube.h"
 
 int main(void) {
-    CubeFace *face = cubeFaceFromString("woo go goo go goo go goo go");
-    CubeFace *newFace = rotateCubeFaceCounterclockwise(face, 1);
-
-    printf("%s\n", cubeFaceToString(newFace));
+    Cube *cube = cubeFromString(
+        "woo go goo go goo go goo go",
+        "goo wo woo wo woo wo woo wo"
+    );
+    printf("%s\n", cubeToString(cube));
     return 0;
 }

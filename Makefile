@@ -1,8 +1,8 @@
 CC := cc
 CFLAGS := -Wall -Wextra -Wpedantic -std=c11
 TARGET := square1
-SRC := main.c block.c block-color.c shape.c cube-face.c
-UNIT_TEST_SRC := unit-test.c block.c block-color.c shape.c cube-face.c
+SRC := main.c block.c block-color.c shape.c cube-face.c cube.c
+UNIT_TEST_SRC := unit-test.c block.c block-color.c shape.c cube-face.c cube.c
 
 .PHONY: all clean test
 
