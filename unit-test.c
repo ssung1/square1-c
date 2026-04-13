@@ -213,6 +213,40 @@ int main(void) {
     CubeFace *nullRotatedFace = rotateCubeFaceCounterclockwise(NULL, 3);
     ++totalTests; passCount += assertNull("rotate NULL face returns NULL", nullRotatedFace);
 
+    /* --- cubeFaceToString: position ordering --- */
+    CubeFace *orderFace = cubeFaceFromString("wg rob");
+    ++totalTests; passCount += assertNotNull("order face not NULL", orderFace);
+    if (orderFace != NULL) {
+        const char *orderStr = cubeFaceToString(orderFace);
+        ++totalTests; passCount += assertNotNull("cubeFaceToString order not NULL", orderStr);
+        ++totalTests; passCount += assertEqual("cubeFaceToString position order", "wg rob", orderStr);
+        free(orderFace);
+    }
+
+    /* --- cubeFaceToString: space separation --- */
+    CubeFace *spaceSepFace = cubeFaceFromString("wgb ro");
+    ++totalTests; passCount += assertNotNull("space sep face not NULL", spaceSepFace);
+    if (spaceSepFace != NULL) {
+        const char *spaceSepStr = cubeFaceToString(spaceSepFace);
+        ++totalTests; passCount += assertNotNull("cubeFaceToString space sep not NULL", spaceSepStr);
+        ++totalTests; passCount += assertEqual("cubeFaceToString space separated", "wgb ro", spaceSepStr);
+        free(spaceSepFace);
+    }
+
+    /* --- cubeFaceToString: NULL face returns NULL --- */
+    const char *nullFaceStr = cubeFaceToString(NULL);
+    ++totalTests; passCount += assertNull("cubeFaceToString NULL face returns NULL", nullFaceStr);
+
+    /* --- cubeFaceToString: empty face returns empty string --- */
+    CubeFace *emptyFace = cubeFaceFromString("");
+    ++totalTests; passCount += assertNotNull("empty face not NULL", emptyFace);
+    if (emptyFace != NULL) {
+        const char *emptyStr = cubeFaceToString(emptyFace);
+        ++totalTests; passCount += assertNotNull("cubeFaceToString empty not NULL", emptyStr);
+        ++totalTests; passCount += assertEqual("cubeFaceToString empty string", "", emptyStr);
+        free(emptyFace);
+    }
+
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 
     return (passCount == totalTests) ? 0 : 1;

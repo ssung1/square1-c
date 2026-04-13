@@ -5,15 +5,9 @@
 #include "cube-face.h"
 
 int main(void) {
-    static const BlockColor sideColor2 = BLOCK_COLOR_BLUE;
-    Block block = {
-        .position = 0,
-        .shape = SHAPE_TRIANGLE,
-        .faceColor = BLOCK_COLOR_WHITE,
-        .sideColor1 = BLOCK_COLOR_GREEN,
-        .sideColor2 = &sideColor2
-    };
+    CubeFace *face = cubeFaceFromString("woo go goo go goo go goo go");
+    CubeFace *newFace = rotateCubeFaceCounterclockwise(face, 1);
 
-    printf("%s\n", blockToString(&block));
+    printf("%s\n", cubeFaceToString(newFace));
     return 0;
 }

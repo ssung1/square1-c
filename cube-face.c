@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "block.h"
+
 #define TOKEN_DELIMS " \t\r\n\v\f"
 #define FACE_POSITION_COUNT 12
 
@@ -46,6 +48,12 @@ static char *duplicateString(const char *text) {
 
     memcpy(copy, text, len + 1);
     return copy;
+}
+
+static int compareBlocksByPosition(const void *a, const void *b) {
+    const Block *blockA = (const Block *)a;
+    const Block *blockB = (const Block *)b;
+    return blockA->position - blockB->position;
 }
 
 CubeFace *cubeFaceFromString(const char *definition) {
@@ -133,4 +141,51 @@ CubeFace *rotateCubeFaceCounterclockwise(const CubeFace *face, int count) {
     }
 
     return rotatedFace;
+}
+
+const char *cubeFaceToString(const CubeFace *face) {
+    static char buffer[256];
+    size_t bufferPos = 0;
+
+    if (face == NULL) {
+        return NULL;
+    }
+
+    if (face->blockCount == 0) {
+        buffer[0] = '\0';
+        return buffer;
+    }
+
+    Block *sortedBlocks = malloc(face->blockCount * sizeof(Block));
+    if (sortedBlocks == NULL) {
+        return NULL;
+    }
+
+    memcpy(sortedBlocks, face->blocks, face->blockCount * sizeof(Block));
+    qsort(sortedBlocks, face->blockCount, sizeof(Block), compareBlocksByPosition);
+
+    for (size_t i = 0; i < face->blockCount; ++i) {
+        const char *blockStr = blockToString(&sortedBlocks[i]);
+        size_t blockLen = strlen(blockStr);
+
+        if (i > 0) {
+            if (bufferPos + 1 >= sizeof(buffer)) {
+                free(sortedBlocks);
+                return NULL;
+            }
+            buffer[bufferPos++] = ' ';
+        }
+
+        if (bufferPos + blockLen >= sizeof(buffer)) {
+            free(sortedBlocks);
+            return NULL;
+        }
+
+        memcpy(&buffer[bufferPos], blockStr, blockLen);
+        bufferPos += blockLen;
+    }
+
+    buffer[bufferPos] = '\0';
+    free(sortedBlocks);
+    return buffer;
 }

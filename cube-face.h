@@ -13,5 +13,6 @@ typedef struct {
 
 CubeFace *cubeFaceFromString(const char *definition);
 CubeFace *rotateCubeFaceCounterclockwise(const CubeFace *face, int count);
+const char *cubeFaceToString(const CubeFace *face);
 
 #endif
