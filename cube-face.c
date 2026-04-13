@@ -5,6 +5,17 @@
 #include <string.h>
 
 #define TOKEN_DELIMS " \t\r\n\v\f"
+#define FACE_POSITION_COUNT 12
+
+static int normalizeFacePosition(int position) {
+    int normalized = position % FACE_POSITION_COUNT;
+
+    if (normalized < 0) {
+        normalized += FACE_POSITION_COUNT;
+    }
+
+    return normalized;
+}
 
 static size_t countTokens(const char *text) {
     size_t count = 0;
@@ -83,4 +94,43 @@ CubeFace *cubeFaceFromString(const char *definition) {
 
     free(copy);
     return face;
+}
+
+CubeFace *rotateCubeFaceCounterclockwise(const CubeFace *face, int count) {
+    if (face == NULL) {
+        return NULL;
+    }
+
+    size_t blockCount = face->blockCount;
+    size_t blockBytes = blockCount * sizeof(Block);
+    size_t sideColor2Bytes = blockCount * sizeof(BlockColor);
+    CubeFace *rotatedFace = malloc(sizeof(CubeFace) + blockBytes + sideColor2Bytes);
+
+    if (rotatedFace == NULL) {
+        return NULL;
+    }
+
+    rotatedFace->blockCount = blockCount;
+    if (blockCount == 0) {
+        return rotatedFace;
+    }
+
+    BlockColor *sideColor2Storage = (BlockColor *)((char *)rotatedFace->blocks + blockBytes);
+    size_t sideColor2Index = 0;
+    int normalizedCount = normalizeFacePosition(count);
+
+    for (size_t i = 0; i < blockCount; ++i) {
+        rotatedFace->blocks[i] = face->blocks[i];
+        rotatedFace->blocks[i].position = normalizeFacePosition(face->blocks[i].position + normalizedCount);
+
+        if (face->blocks[i].sideColor2 != NULL) {
+            sideColor2Storage[sideColor2Index] = *face->blocks[i].sideColor2;
+            rotatedFace->blocks[i].sideColor2 = &sideColor2Storage[sideColor2Index];
+            ++sideColor2Index;
+        } else {
+            rotatedFace->blocks[i].sideColor2 = NULL;
+        }
+    }
+
+    return rotatedFace;
 }

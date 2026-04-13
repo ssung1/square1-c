@@ -146,6 +146,73 @@ int main(void) {
     ++totalTests; passCount += assertNull("invalid color symbol yields NULL", invalidColorFace);
     if (invalidColorFace != NULL) { free(invalidColorFace); }
 
+    /* --- rotateCubeFaceCounterclockwise: wraps around 12-slot ring --- */
+    CubeFace *rotWrapFace = cubeFaceFromString("wgb rob");
+
+    ++totalTests; passCount += assertNotNull("rotate wrap face not NULL", rotWrapFace);
+    if (rotWrapFace != NULL) {
+        rotWrapFace->blocks[0].position = 11;
+        rotWrapFace->blocks[1].position = 11;
+
+        CubeFace *rotWrapBy1 = rotateCubeFaceCounterclockwise(rotWrapFace, 1);
+        ++totalTests; passCount += assertNotNull("rotate by 1 returns new face", rotWrapBy1);
+        if (rotWrapBy1 != NULL) {
+            ++totalTests; passCount += assertEqualInt("rotate 11+1 wraps to 0", 0, rotWrapBy1->blocks[0].position);
+            ++totalTests; passCount += assertEqualInt("rotate original remains unchanged", 11, rotWrapFace->blocks[0].position);
+            free(rotWrapBy1);
+        }
+
+        rotWrapFace->blocks[1].position = 11;
+        CubeFace *rotWrapBy2 = rotateCubeFaceCounterclockwise(rotWrapFace, 2);
+        ++totalTests; passCount += assertNotNull("rotate by 2 returns new face", rotWrapBy2);
+        if (rotWrapBy2 != NULL) {
+            ++totalTests; passCount += assertEqualInt("rotate 11+2 wraps to 1", 1, rotWrapBy2->blocks[1].position);
+            ++totalTests; passCount += assertEqualInt("rotate original remains unchanged 2", 11, rotWrapFace->blocks[1].position);
+            free(rotWrapBy2);
+        }
+
+        free(rotWrapFace);
+    }
+
+    /* --- rotateCubeFaceCounterclockwise: preserves shape/color fields --- */
+    CubeFace *rotPreserveFace = cubeFaceFromString("wgb ro");
+
+    ++totalTests; passCount += assertNotNull("rotate preserve face not NULL", rotPreserveFace);
+    if (rotPreserveFace != NULL) {
+        Geometry beforeGeometry = rotPreserveFace->blocks[0].shape.geometry;
+        int beforeSize = rotPreserveFace->blocks[0].shape.size;
+        BlockColor beforeFaceColor = rotPreserveFace->blocks[0].faceColor;
+        BlockColor beforeSideColor1 = rotPreserveFace->blocks[0].sideColor1;
+        const BlockColor *beforeSideColor2Ptr = rotPreserveFace->blocks[0].sideColor2;
+        BlockColor beforeSideColor2Val = BLOCK_COLOR_WHITE;
+
+        if (beforeSideColor2Ptr != NULL) {
+            beforeSideColor2Val = *beforeSideColor2Ptr;
+        }
+
+        CubeFace *rotatedPreserveFace = rotateCubeFaceCounterclockwise(rotPreserveFace, 5);
+        ++totalTests; passCount += assertNotNull("rotate preserve returns new face", rotatedPreserveFace);
+        if (rotatedPreserveFace != NULL) {
+            ++totalTests; passCount += assertEqualGeometry("rotate preserves geometry", beforeGeometry, rotatedPreserveFace->blocks[0].shape.geometry);
+            ++totalTests; passCount += assertEqualInt("rotate preserves shape size", beforeSize, rotatedPreserveFace->blocks[0].shape.size);
+            ++totalTests; passCount += assertEqualInt("rotate preserves faceColor", (int)beforeFaceColor, (int)rotatedPreserveFace->blocks[0].faceColor);
+            ++totalTests; passCount += assertEqualInt("rotate preserves sideColor1", (int)beforeSideColor1, (int)rotatedPreserveFace->blocks[0].sideColor1);
+            ++totalTests; passCount += assertNotNull("rotate preserves sideColor2 pointer", rotatedPreserveFace->blocks[0].sideColor2);
+            if (rotatedPreserveFace->blocks[0].sideColor2 != NULL) {
+                ++totalTests; passCount += assertEqualInt("rotate preserves sideColor2 value", (int)beforeSideColor2Val, (int)*rotatedPreserveFace->blocks[0].sideColor2);
+            }
+
+            ++totalTests; passCount += assertEqualInt("rotate source face unchanged position", 0, rotPreserveFace->blocks[0].position);
+            free(rotatedPreserveFace);
+        }
+
+        free(rotPreserveFace);
+    }
+
+    /* --- rotateCubeFaceCounterclockwise: NULL face returns NULL --- */
+    CubeFace *nullRotatedFace = rotateCubeFaceCounterclockwise(NULL, 3);
+    ++totalTests; passCount += assertNull("rotate NULL face returns NULL", nullRotatedFace);
+
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 
     return (passCount == totalTests) ? 0 : 1;
