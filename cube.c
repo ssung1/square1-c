@@ -16,6 +16,16 @@ static char *duplicateString(const char *text) {
     return copy;
 }
 
+static int normalizePosition(int position) {
+    int normalized = position % 12;
+
+    if (normalized < 0) {
+        normalized += 12;
+    }
+
+    return normalized;
+}
+
 static void freeCubeInternal(Cube *cube) {
     if (cube == NULL) {
         return;
@@ -177,6 +187,86 @@ Cube *rotateCubeBottomFaceClockwise(const Cube *cube, int count) {
     return rotatedCube;
 }
 
+static CubeFace *buildFlippedFace(const CubeFace *sameFace, const CubeFace *otherFace) {
+    size_t i;
+    size_t blockCount = 0;
+    size_t blockBytes;
+    size_t sideColor2Bytes;
+    CubeFace *resultFace;
+    BlockColor *sideColor2Storage;
+    size_t writeIndex = 0;
+    size_t sideColor2Index = 0;
+
+    if (sameFace == NULL || otherFace == NULL) {
+        return NULL;
+    }
+
+    for (i = 0; i < sameFace->blockCount; ++i) {
+        if (sameFace->blocks[i].position >= 6) {
+            ++blockCount;
+        }
+    }
+
+    for (i = 0; i < otherFace->blockCount; ++i) {
+        if (otherFace->blocks[i].position < 6) {
+            ++blockCount;
+        }
+    }
+
+    blockBytes = blockCount * sizeof(Block);
+    sideColor2Bytes = blockCount * sizeof(BlockColor);
+    resultFace = malloc(sizeof(CubeFace) + blockBytes + sideColor2Bytes);
+    if (resultFace == NULL) {
+        return NULL;
+    }
+
+    resultFace->blockCount = blockCount;
+    if (blockCount == 0) {
+        return resultFace;
+    }
+
+    sideColor2Storage = (BlockColor *)((char *)resultFace->blocks + blockBytes);
+
+    for (i = 0; i < sameFace->blockCount; ++i) {
+        const Block *source = &sameFace->blocks[i];
+        Block *dest;
+
+        if (source->position < 6) {
+            continue;
+        }
+
+        dest = &resultFace->blocks[writeIndex++];
+        *dest = *source;
+        if (source->sideColor2 != NULL) {
+            sideColor2Storage[sideColor2Index] = *source->sideColor2;
+            dest->sideColor2 = &sideColor2Storage[sideColor2Index++];
+        } else {
+            dest->sideColor2 = NULL;
+        }
+    }
+
+    for (i = 0; i < otherFace->blockCount; ++i) {
+        const Block *source = &otherFace->blocks[i];
+        Block *dest;
+
+        if (source->position >= 6) {
+            continue;
+        }
+
+        dest = &resultFace->blocks[writeIndex++];
+        *dest = *source;
+        dest->position = normalizePosition(6 - source->position - source->shape.size);
+        if (source->sideColor2 != NULL) {
+            sideColor2Storage[sideColor2Index] = *source->sideColor2;
+            dest->sideColor2 = &sideColor2Storage[sideColor2Index++];
+        } else {
+            dest->sideColor2 = NULL;
+        }
+    }
+
+    return resultFace;
+}
+
 static int isFaceFlippable(const CubeFace *face) {
     size_t i;
     int offset;
@@ -203,4 +293,40 @@ int isFlippable(const Cube *cube) {
     }
 
     return isFaceFlippable(cube->topFace) && isFaceFlippable(cube->bottomFace);
+}
+
+Cube *flip(const Cube *cube) {
+    Cube *flippedCube;
+
+    if (cube == NULL) {
+        return NULL;
+    }
+
+    flippedCube = malloc(sizeof(Cube));
+    if (flippedCube == NULL) {
+        return NULL;
+    }
+
+    flippedCube->topFace = buildFlippedFace(cube->topFace, cube->bottomFace);
+    if (flippedCube->topFace == NULL) {
+        free(flippedCube);
+        return NULL;
+    }
+
+    flippedCube->bottomFace = buildFlippedFace(cube->bottomFace, cube->topFace);
+    if (flippedCube->bottomFace == NULL) {
+        free(flippedCube->topFace);
+        free(flippedCube);
+        return NULL;
+    }
+
+    flippedCube->history = duplicateString((cube->history != NULL) ? cube->history : "");
+    if (flippedCube->history == NULL) {
+        free(flippedCube->bottomFace);
+        free(flippedCube->topFace);
+        free(flippedCube);
+        return NULL;
+    }
+
+    return flippedCube;
 }

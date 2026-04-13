@@ -80,6 +80,22 @@ static int assertNull(const char *name, const void *ptr) {
     return 0;
 }
 
+static const Block *findBlockByPosition(const CubeFace *face, int position) {
+    size_t i;
+
+    if (face == NULL) {
+        return NULL;
+    }
+
+    for (i = 0; i < face->blockCount; ++i) {
+        if (face->blocks[i].position == position) {
+            return &face->blocks[i];
+        }
+    }
+
+    return NULL;
+}
+
 int main(void) {
     int passCount = 0;
     int totalTests = 0;
@@ -436,6 +452,106 @@ int main(void) {
     /* --- cubeFaceToString: NULL input returns NULL (unchanged) --- */
     const char *nullStr = cubeFaceToString(NULL);
     ++totalTests; passCount += assertNull("cubeFaceToString NULL returns NULL", nullStr);
+
+    /* --- flip: right-half triangle at top position 0 moves to bottom position 5 --- */
+    Cube *flipTriangleSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "bo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("flip triangle source cube not NULL", flipTriangleSource);
+    if (flipTriangleSource != NULL) {
+        Cube *flipTriangleResult = flip(flipTriangleSource);
+        ++totalTests; passCount += assertNotNull("flip triangle result cube not NULL", flipTriangleResult);
+        if (flipTriangleResult != NULL) {
+            const Block *movedTriangle = findBlockByPosition(flipTriangleResult->bottomFace, 5);
+            ++totalTests; passCount += assertNotNull("flip triangle moved block found at bottom pos 5", movedTriangle);
+            if (movedTriangle != NULL) {
+                ++totalTests; passCount += assertEqualInt("flip triangle moved block face color preserved", BLOCK_COLOR_RED, movedTriangle->faceColor);
+                ++totalTests; passCount += assertEqualGeometry("flip triangle moved block remains triangle", GEOMETRY_TRIANGLE, movedTriangle->shape.geometry);
+            }
+            freeCubeForTest(flipTriangleResult);
+        }
+        freeCubeForTest(flipTriangleSource);
+    }
+
+    /* --- flip: right-half kite at top position 0 moves to bottom position 4 --- */
+    Cube *flipKiteSource = cubeFromString(
+        "wgb wg wg wg wg wg wg wg wg wg wg",
+        "bo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("flip kite source cube not NULL", flipKiteSource);
+    if (flipKiteSource != NULL) {
+        Cube *flipKiteResult = flip(flipKiteSource);
+        ++totalTests; passCount += assertNotNull("flip kite result cube not NULL", flipKiteResult);
+        if (flipKiteResult != NULL) {
+            const Block *movedKite = findBlockByPosition(flipKiteResult->bottomFace, 4);
+            ++totalTests; passCount += assertNotNull("flip kite moved block found at bottom pos 4", movedKite);
+            if (movedKite != NULL) {
+                ++totalTests; passCount += assertEqualGeometry("flip kite moved block remains kite", GEOMETRY_KITE, movedKite->shape.geometry);
+                ++totalTests; passCount += assertEqualInt("flip kite moved block sideColor2 preserved", BLOCK_COLOR_BLUE, (movedKite->sideColor2 != NULL) ? *movedKite->sideColor2 : -1);
+            }
+            freeCubeForTest(flipKiteResult);
+        }
+        freeCubeForTest(flipKiteSource);
+    }
+
+    /* --- flip: right-half blocks from bottom move to top with reflected position --- */
+    Cube *bottomToTopSource = cubeFromString(
+        "wg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo wg wg wg wg wg wg wg wg wg wg wg");
+    ++totalTests; passCount += assertNotNull("flip bottom-to-top source cube not NULL", bottomToTopSource);
+    if (bottomToTopSource != NULL) {
+        Cube *bottomToTopResult = flip(bottomToTopSource);
+        ++totalTests; passCount += assertNotNull("flip bottom-to-top result cube not NULL", bottomToTopResult);
+        if (bottomToTopResult != NULL) {
+            const Block *movedFromBottom = findBlockByPosition(bottomToTopResult->topFace, 5);
+            ++totalTests; passCount += assertNotNull("flip block from bottom found at top pos 5", movedFromBottom);
+            if (movedFromBottom != NULL) {
+                ++totalTests; passCount += assertEqualInt("flip block from bottom face color preserved", BLOCK_COLOR_YELLOW, movedFromBottom->faceColor);
+            }
+            freeCubeForTest(bottomToTopResult);
+        }
+        freeCubeForTest(bottomToTopSource);
+    }
+
+    /* --- flip: left-half blocks remain on original face unchanged --- */
+    Cube *leftHalfSource = cubeFromString(
+        "wg wg wg wg wg wg rg wg wg wg wg wg",
+        "bo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("flip left-half source cube not NULL", leftHalfSource);
+    if (leftHalfSource != NULL) {
+        Cube *leftHalfResult = flip(leftHalfSource);
+        ++totalTests; passCount += assertNotNull("flip left-half result cube not NULL", leftHalfResult);
+        if (leftHalfResult != NULL) {
+            const Block *leftBlock = findBlockByPosition(leftHalfResult->topFace, 6);
+            ++totalTests; passCount += assertNotNull("flip left-half block still at top pos 6", leftBlock);
+            if (leftBlock != NULL) {
+                ++totalTests; passCount += assertEqualInt("flip left-half block color unchanged", BLOCK_COLOR_RED, leftBlock->faceColor);
+            }
+            freeCubeForTest(leftHalfResult);
+        }
+        freeCubeForTest(leftHalfSource);
+    }
+
+    /* --- flip: source cube remains unchanged --- */
+    Cube *immutSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "bo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("flip immutability source cube not NULL", immutSource);
+    if (immutSource != NULL) {
+        int sourceTopPos = immutSource->topFace->blocks[0].position;
+        int sourceTopColor = immutSource->topFace->blocks[0].faceColor;
+        Cube *immutResult = flip(immutSource);
+        ++totalTests; passCount += assertNotNull("flip immutability result cube not NULL", immutResult);
+        if (immutResult != NULL) {
+            ++totalTests; passCount += assertEqualInt("flip immutability source top pos unchanged", sourceTopPos, immutSource->topFace->blocks[0].position);
+            ++totalTests; passCount += assertEqualInt("flip immutability source top color unchanged", sourceTopColor, immutSource->topFace->blocks[0].faceColor);
+            freeCubeForTest(immutResult);
+        }
+        freeCubeForTest(immutSource);
+    }
+
+    /* --- flip: NULL input returns NULL --- */
+    Cube *nullFlip = flip(NULL);
+    ++totalTests; passCount += assertNull("flip NULL returns NULL", nullFlip);
 
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 

@@ -7,9 +7,9 @@
 
 int main(void) {
     Cube *cube = cubeFromString(
-        "woo go goo go goo go goo go",
-        "goo wo woo wo woo wo woo wo"
+        "woo wo woo wo woo wo woo wo",
+        "goo go goo go goo go goo go"
     );
-    printf("%s\n", cubeToString(rotateCubeTopFaceClockwise(cube, 2)));
+    printf("%s\n", cubeToString(flip(cube)));
     return 0;
 }

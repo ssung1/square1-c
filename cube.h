@@ -14,5 +14,6 @@ const char *cubeToString(const Cube *cube);
 Cube *rotateCubeTopFaceClockwise(const Cube *cube, int count);
 Cube *rotateCubeBottomFaceClockwise(const Cube *cube, int count);
 int isFlippable(const Cube *cube);
+Cube *flip(const Cube *cube);
 
 #endif
