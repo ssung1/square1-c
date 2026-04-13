@@ -11,6 +11,10 @@ int main(void) {
         "goo wo woo wo woo wo woo wo"
     );
     printf("%s\n", cubeToString(cube));
+    printf("%d\n", isFlippable(cube));
     printf("%s\n", cubeToString(rotateCubeTopFaceClockwise(cube, 1)));
+    printf("%d\n", isFlippable(rotateCubeTopFaceClockwise(cube, 1)));
+    printf("%s\n", cubeToString(rotateCubeTopFaceClockwise(cube, 2)));
+    printf("%d\n", isFlippable(rotateCubeTopFaceClockwise(cube, 2)));
     return 0;
 }

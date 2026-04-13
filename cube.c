@@ -176,3 +176,31 @@ Cube *rotateCubeBottomFaceClockwise(const Cube *cube, int count) {
     rotatedCube->bottomFace = rotatedBottomFace;
     return rotatedCube;
 }
+
+static int isFaceFlippable(const CubeFace *face) {
+    size_t i;
+    int offset;
+
+    if (face == NULL) {
+        return 0;
+    }
+
+    for (i = 0; i < face->blockCount; ++i) {
+        for (offset = 1; offset < face->blocks[i].shape.size; ++offset) {
+            int interior = (face->blocks[i].position + offset) % 12;
+            if (interior == 0 || interior == 6) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+int isFlippable(const Cube *cube) {
+    if (cube == NULL) {
+        return 0;
+    }
+
+    return isFaceFlippable(cube->topFace) && isFaceFlippable(cube->bottomFace);
+}

@@ -349,6 +349,49 @@ int main(void) {
     Cube *nullBottomRotate = rotateCubeBottomFaceClockwise(NULL, 1);
     ++totalTests; passCount += assertNull("rotateCubeBottomFaceClockwise NULL returns NULL", nullBottomRotate);
 
+    /* --- isFlippable: both faces flippable (12 triangles each) --- */
+    Cube *flippableCube = cubeFromString(
+        "wg wg wg wg wg wg wg wg wg wg wg wg",
+        "wg wg wg wg wg wg wg wg wg wg wg wg");
+    ++totalTests; passCount += assertNotNull("isFlippable cube not NULL", flippableCube);
+    if (flippableCube != NULL) {
+        ++totalTests; passCount += assertEqualInt("isFlippable both faces clean returns 1", 1, isFlippable(flippableCube));
+        freeCubeForTest(flippableCube);
+    }
+
+    /* --- isFlippable: top face has kite at position 11 (interior at 0) --- */
+    Cube *kitAt11TopCube = cubeFromString(
+        "wg wg wg wg wg wg wg wg wg wg wg wrb",
+        "wg wg wg wg wg wg wg wg wg wg wg wg");
+    ++totalTests; passCount += assertNotNull("isFlippable kite-at-11 top cube not NULL", kitAt11TopCube);
+    if (kitAt11TopCube != NULL) {
+        ++totalTests; passCount += assertEqualInt("isFlippable top kite at 11 spanning 0 returns 0", 0, isFlippable(kitAt11TopCube));
+        freeCubeForTest(kitAt11TopCube);
+    }
+
+    /* --- isFlippable: top face has kite at position 5 (interior at 6) --- */
+    Cube *kiteAt5TopCube = cubeFromString(
+        "wg wg wg wg wg wrb",
+        "wg wg wg wg wg wg wg wg wg wg wg wg");
+    ++totalTests; passCount += assertNotNull("isFlippable kite-at-5 top cube not NULL", kiteAt5TopCube);
+    if (kiteAt5TopCube != NULL) {
+        ++totalTests; passCount += assertEqualInt("isFlippable top kite at 5 spanning 6 returns 0", 0, isFlippable(kiteAt5TopCube));
+        freeCubeForTest(kiteAt5TopCube);
+    }
+
+    /* --- isFlippable: top face flippable, bottom face has kite at position 11 --- */
+    Cube *bottomNotFlippable = cubeFromString(
+        "wg wg wg wg wg wg wg wg wg wg wg wg",
+        "wg wg wg wg wg wg wg wg wg wg wg wrb");
+    ++totalTests; passCount += assertNotNull("isFlippable bottom-not-flippable cube not NULL", bottomNotFlippable);
+    if (bottomNotFlippable != NULL) {
+        ++totalTests; passCount += assertEqualInt("isFlippable bottom kite at 11 returns 0", 0, isFlippable(bottomNotFlippable));
+        freeCubeForTest(bottomNotFlippable);
+    }
+
+    /* --- isFlippable: NULL cube returns 0 --- */
+    ++totalTests; passCount += assertEqualInt("isFlippable NULL cube returns 0", 0, isFlippable(NULL));
+
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 
     return (passCount == totalTests) ? 0 : 1;
