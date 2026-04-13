@@ -553,6 +553,150 @@ int main(void) {
     Cube *nullFlip = flip(NULL);
     ++totalTests; passCount += assertNull("flip NULL returns NULL", nullFlip);
 
+    /* --- operate: 1-char token rotates top only --- */
+    Cube *operateTopSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "bo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate top-only source not NULL", operateTopSource);
+    if (operateTopSource != NULL) {
+        Cube *operateTopResult = operate(operateTopSource, "1");
+        ++totalTests; passCount += assertNotNull("operate top-only result not NULL", operateTopResult);
+        if (operateTopResult != NULL) {
+            const Block *rotatedTop = findBlockByPosition(operateTopResult->topFace, 1);
+            ++totalTests; passCount += assertNotNull("operate top-only moved top block to pos 1", rotatedTop);
+            if (rotatedTop != NULL) {
+                ++totalTests; passCount += assertEqualInt("operate top-only preserves top block color", BLOCK_COLOR_RED, rotatedTop->faceColor);
+            }
+            ++totalTests; passCount += assertEqualInt("operate top-only bottom unchanged", 0, operateTopResult->bottomFace->blocks[0].position);
+            freeCubeForTest(operateTopResult);
+        }
+        freeCubeForTest(operateTopSource);
+    }
+
+    /* --- operate: 2-char token rotates top and bottom only --- */
+    Cube *operateTwoSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate two-char source not NULL", operateTwoSource);
+    if (operateTwoSource != NULL) {
+        Cube *operateTwoResult = operate(operateTwoSource, "12");
+        ++totalTests; passCount += assertNotNull("operate two-char result not NULL", operateTwoResult);
+        if (operateTwoResult != NULL) {
+            const Block *topAt1 = findBlockByPosition(operateTwoResult->topFace, 1);
+            const Block *bottomAt2 = findBlockByPosition(operateTwoResult->bottomFace, 2);
+            ++totalTests; passCount += assertNotNull("operate two-char top rotated to pos 1", topAt1);
+            ++totalTests; passCount += assertNotNull("operate two-char bottom rotated to pos 2", bottomAt2);
+            if (topAt1 != NULL) {
+                ++totalTests; passCount += assertEqualInt("operate two-char top color preserved", BLOCK_COLOR_RED, topAt1->faceColor);
+            }
+            if (bottomAt2 != NULL) {
+                ++totalTests; passCount += assertEqualInt("operate two-char bottom color preserved", BLOCK_COLOR_YELLOW, bottomAt2->faceColor);
+            }
+            freeCubeForTest(operateTwoResult);
+        }
+        freeCubeForTest(operateTwoSource);
+    }
+
+    /* --- operate: 3-char token applies flip when third char is space --- */
+    Cube *operateFlipSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate flip source not NULL", operateFlipSource);
+    if (operateFlipSource != NULL) {
+        Cube *operateFlipResult = operate(operateFlipSource, "00 ");
+        ++totalTests; passCount += assertNotNull("operate flip result not NULL", operateFlipResult);
+        if (operateFlipResult != NULL) {
+            const Block *topFromBottom = findBlockByPosition(operateFlipResult->topFace, 5);
+            const Block *bottomFromTop = findBlockByPosition(operateFlipResult->bottomFace, 5);
+            ++totalTests; passCount += assertNotNull("operate flip moved bottom block to top pos 5", topFromBottom);
+            ++totalTests; passCount += assertNotNull("operate flip moved top block to bottom pos 5", bottomFromTop);
+            if (topFromBottom != NULL) {
+                ++totalTests; passCount += assertEqualInt("operate flip top received bottom color", BLOCK_COLOR_YELLOW, topFromBottom->faceColor);
+            }
+            if (bottomFromTop != NULL) {
+                ++totalTests; passCount += assertEqualInt("operate flip bottom received top color", BLOCK_COLOR_RED, bottomFromTop->faceColor);
+            }
+            freeCubeForTest(operateFlipResult);
+        }
+        freeCubeForTest(operateFlipSource);
+    }
+
+    /* --- operate: invalid token characters return NULL --- */
+    Cube *operateInvalidSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate invalid source not NULL", operateInvalidSource);
+    if (operateInvalidSource != NULL) {
+        Cube *invalidTop = operate(operateInvalidSource, "z");
+        Cube *invalidBottom = operate(operateInvalidSource, "1z");
+        Cube *invalidThird = operate(operateInvalidSource, "10x");
+        ++totalTests; passCount += assertNull("operate invalid top char returns NULL", invalidTop);
+        ++totalTests; passCount += assertNull("operate invalid bottom char returns NULL", invalidBottom);
+        ++totalTests; passCount += assertNull("operate invalid third char returns NULL", invalidThird);
+        freeCubeForTest(operateInvalidSource);
+    }
+
+    /* --- operate: source cube unchanged after operate --- */
+    Cube *operateImmutSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate immutability source not NULL", operateImmutSource);
+    if (operateImmutSource != NULL) {
+        char *sourceHistory = duplicateStringForTest("U");
+        ++totalTests; passCount += assertNotNull("operate immutability history alloc", sourceHistory);
+        if (sourceHistory != NULL) {
+            int sourceTopPos = operateImmutSource->topFace->blocks[0].position;
+            int sourceBottomPos = operateImmutSource->bottomFace->blocks[0].position;
+            free(operateImmutSource->history);
+            operateImmutSource->history = sourceHistory;
+
+            Cube *operateImmutResult = operate(operateImmutSource, "1b ");
+            ++totalTests; passCount += assertNotNull("operate immutability result not NULL", operateImmutResult);
+            if (operateImmutResult != NULL) {
+                ++totalTests; passCount += assertEqualInt("operate source top unchanged", sourceTopPos, operateImmutSource->topFace->blocks[0].position);
+                ++totalTests; passCount += assertEqualInt("operate source bottom unchanged", sourceBottomPos, operateImmutSource->bottomFace->blocks[0].position);
+                ++totalTests; passCount += assertEqual("operate source history unchanged", "U", operateImmutSource->history);
+                freeCubeForTest(operateImmutResult);
+            }
+        }
+        freeCubeForTest(operateImmutSource);
+    }
+
+    /* --- operate: history appends operation string --- */
+    Cube *operateHistorySource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate history source not NULL", operateHistorySource);
+    if (operateHistorySource != NULL) {
+        char *history = duplicateStringForTest("U");
+        ++totalTests; passCount += assertNotNull("operate history alloc", history);
+        if (history != NULL) {
+            free(operateHistorySource->history);
+            operateHistorySource->history = history;
+
+            Cube *operateHistoryResult = operate(operateHistorySource, "1a ");
+            ++totalTests; passCount += assertNotNull("operate history result not NULL", operateHistoryResult);
+            if (operateHistoryResult != NULL) {
+                ++totalTests; passCount += assertEqual("operate history appended", "U1a ", operateHistoryResult->history);
+                freeCubeForTest(operateHistoryResult);
+            }
+        }
+        freeCubeForTest(operateHistorySource);
+    }
+
+    /* --- operate: NULL cube or NULL ops returns NULL --- */
+    Cube *operateNullSource = cubeFromString(
+        "rg wg wg wg wg wg wg wg wg wg wg wg",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate NULL-arg source not NULL", operateNullSource);
+    if (operateNullSource != NULL) {
+        Cube *nullCubeResult = operate(NULL, "1");
+        Cube *nullOpsResult = operate(operateNullSource, NULL);
+        ++totalTests; passCount += assertNull("operate NULL cube returns NULL", nullCubeResult);
+        ++totalTests; passCount += assertNull("operate NULL ops returns NULL", nullOpsResult);
+        freeCubeForTest(operateNullSource);
+    }
+
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 
     return (passCount == totalTests) ? 0 : 1;

@@ -15,5 +15,6 @@ Cube *rotateCubeTopFaceClockwise(const Cube *cube, int count);
 Cube *rotateCubeBottomFaceClockwise(const Cube *cube, int count);
 int isFlippable(const Cube *cube);
 Cube *flip(const Cube *cube);
+Cube *operate(const Cube *cube, const char *ops);
 
 #endif

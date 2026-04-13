@@ -267,6 +267,29 @@ static CubeFace *buildFlippedFace(const CubeFace *sameFace, const CubeFace *othe
     return resultFace;
 }
 
+static int decodeRotationChar(char c, int *rotation) {
+    if (rotation == NULL) {
+        return 0;
+    }
+
+    if (c >= '0' && c <= '9') {
+        *rotation = c - '0';
+        return 1;
+    }
+
+    if (c >= 'a' && c <= 'b') {
+        *rotation = 10 + (c - 'a');
+        return 1;
+    }
+
+    if (c >= 'A' && c <= 'B') {
+        *rotation = 10 + (c - 'A');
+        return 1;
+    }
+
+    return 0;
+}
+
 static int isFaceFlippable(const CubeFace *face) {
     size_t i;
     int offset;
@@ -329,4 +352,94 @@ Cube *flip(const Cube *cube) {
     }
 
     return flippedCube;
+}
+
+Cube *operate(const Cube *cube, const char *ops) {
+    Cube *current;
+    size_t i;
+    size_t opsLen;
+
+    if (cube == NULL || ops == NULL) {
+        return NULL;
+    }
+
+    current = cloneCube(cube);
+    if (current == NULL) {
+        return NULL;
+    }
+
+    opsLen = strlen(ops);
+    for (i = 0; i < opsLen; i += 3) {
+        size_t tokenLen = opsLen - i;
+        int topRotation;
+        Cube *next;
+
+        if (tokenLen > 3) {
+            tokenLen = 3;
+        }
+
+        if (!decodeRotationChar(ops[i], &topRotation)) {
+            freeCubeInternal(current);
+            return NULL;
+        }
+
+        next = rotateCubeTopFaceClockwise(current, topRotation);
+        if (next == NULL) {
+            freeCubeInternal(current);
+            return NULL;
+        }
+        freeCubeInternal(current);
+        current = next;
+
+        if (tokenLen >= 2) {
+            int bottomRotation;
+
+            if (!decodeRotationChar(ops[i + 1], &bottomRotation)) {
+                freeCubeInternal(current);
+                return NULL;
+            }
+
+            next = rotateCubeBottomFaceClockwise(current, bottomRotation);
+            if (next == NULL) {
+                freeCubeInternal(current);
+                return NULL;
+            }
+            freeCubeInternal(current);
+            current = next;
+        }
+
+        if (tokenLen == 3) {
+            if (ops[i + 2] != ' ') {
+                freeCubeInternal(current);
+                return NULL;
+            }
+
+            next = flip(current);
+            if (next == NULL) {
+                freeCubeInternal(current);
+                return NULL;
+            }
+            freeCubeInternal(current);
+            current = next;
+        }
+    }
+
+    {
+        const char *baseHistory = (current->history != NULL) ? current->history : "";
+        size_t baseLen = strlen(baseHistory);
+        char *newHistory = malloc(baseLen + opsLen + 1);
+
+        if (newHistory == NULL) {
+            freeCubeInternal(current);
+            return NULL;
+        }
+
+        memcpy(newHistory, baseHistory, baseLen);
+        memcpy(newHistory + baseLen, ops, opsLen + 1);
+
+        free(current->history);
+        current->history = newHistory;
+    }
+
+    return current;
 }
