@@ -146,6 +146,7 @@ CubeFace *rotateClubFaceClockwise(const CubeFace *face, int count) {
 const char *cubeFaceToString(const CubeFace *face) {
     static char buffer[256];
     size_t bufferPos = 0;
+    int minPosition;
 
     if (face == NULL) {
         return NULL;
@@ -163,6 +164,18 @@ const char *cubeFaceToString(const CubeFace *face) {
 
     memcpy(sortedBlocks, face->blocks, face->blockCount * sizeof(Block));
     qsort(sortedBlocks, face->blockCount, sizeof(Block), compareBlocksByPosition);
+
+    /* Find the minimum position */
+    minPosition = sortedBlocks[0].position;
+
+    /* Prepend * if minimum position is 1 */
+    if (minPosition == 1) {
+        if (bufferPos + 1 >= sizeof(buffer)) {
+            free(sortedBlocks);
+            return NULL;
+        }
+        buffer[bufferPos++] = '*';
+    }
 
     for (size_t i = 0; i < face->blockCount; ++i) {
         const char *blockStr = blockToString(&sortedBlocks[i]);

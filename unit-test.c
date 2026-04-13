@@ -392,6 +392,51 @@ int main(void) {
     /* --- isFlippable: NULL cube returns 0 --- */
     ++totalTests; passCount += assertEqualInt("isFlippable NULL cube returns 0", 0, isFlippable(NULL));
 
+    /* --- cubeFaceToString: blocks starting at position 0 (no prefix) --- */
+    CubeFace *faceAt0 = cubeFaceFromString("wg wg wg wg wg wg wg wg wg wg wg wg");
+    ++totalTests; passCount += assertNotNull("cubeFaceToString face at 0 not NULL", faceAt0);
+    if (faceAt0 != NULL) {
+        const char *str0 = cubeFaceToString(faceAt0);
+        ++totalTests; passCount += assertNotNull("cubeFaceToString at 0 returns non-NULL", str0);
+        if (str0 != NULL) {
+            ++totalTests; passCount += assertEqual("cubeFaceToString at 0 no prefix", "wg wg wg wg wg wg wg wg wg wg wg wg", str0);
+        }
+        free(faceAt0);
+    }
+
+    /* --- cubeFaceToString: blocks starting at position 1 (with prefix, via rotation) --- */
+    CubeFace *faceBeforeRotate = cubeFaceFromString("wrb wrb");
+    ++totalTests; passCount += assertNotNull("cubeFaceToString face before rotate not NULL", faceBeforeRotate);
+    if (faceBeforeRotate != NULL) {
+        CubeFace *faceAt1 = rotateClubFaceClockwise(faceBeforeRotate, 11);
+        ++totalTests; passCount += assertNotNull("cubeFaceToString face at 1 (rotated) not NULL", faceAt1);
+        if (faceAt1 != NULL) {
+            const char *str1 = cubeFaceToString(faceAt1);
+            ++totalTests; passCount += assertNotNull("cubeFaceToString at 1 returns non-NULL", str1);
+            if (str1 != NULL) {
+                ++totalTests; passCount += assertEqualInt("cubeFaceToString at 1 has prefix", 1, (str1[0] == '*' ? 1 : 0));
+            }
+            free(faceAt1);
+        }
+        free(faceBeforeRotate);
+    }
+
+    /* --- cubeFaceToString: blocks starting at position 2 (no prefix) --- */
+    CubeFace *faceAt2 = cubeFaceFromString("wrb wrb");
+    ++totalTests; passCount += assertNotNull("cubeFaceToString face at 2 not NULL", faceAt2);
+    if (faceAt2 != NULL) {
+        const char *str2 = cubeFaceToString(faceAt2);
+        ++totalTests; passCount += assertNotNull("cubeFaceToString at 2 returns non-NULL", str2);
+        if (str2 != NULL) {
+            ++totalTests; passCount += assertEqualInt("cubeFaceToString at 2 no prefix", 0, (str2[0] == '*' ? 1 : 0));
+        }
+        free(faceAt2);
+    }
+
+    /* --- cubeFaceToString: NULL input returns NULL (unchanged) --- */
+    const char *nullStr = cubeFaceToString(NULL);
+    ++totalTests; passCount += assertNull("cubeFaceToString NULL returns NULL", nullStr);
+
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 
     return (passCount == totalTests) ? 0 : 1;
