@@ -16,6 +16,53 @@ static char *duplicateString(const char *text) {
     return copy;
 }
 
+static void freeCubeInternal(Cube *cube) {
+    if (cube == NULL) {
+        return;
+    }
+
+    free(cube->topFace);
+    free(cube->bottomFace);
+    free(cube->history);
+    free(cube);
+}
+
+static Cube *cloneCube(const Cube *cube) {
+    Cube *copy;
+
+    if (cube == NULL) {
+        return NULL;
+    }
+
+    copy = malloc(sizeof(Cube));
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    copy->topFace = rotateClubFaceClockwise(cube->topFace, 0);
+    if (copy->topFace == NULL) {
+        free(copy);
+        return NULL;
+    }
+
+    copy->bottomFace = rotateClubFaceClockwise(cube->bottomFace, 0);
+    if (copy->bottomFace == NULL) {
+        free(copy->topFace);
+        free(copy);
+        return NULL;
+    }
+
+    copy->history = duplicateString((cube->history != NULL) ? cube->history : "");
+    if (copy->history == NULL) {
+        free(copy->bottomFace);
+        free(copy->topFace);
+        free(copy);
+        return NULL;
+    }
+
+    return copy;
+}
+
 Cube *cubeFromString(const char *topFace, const char *bottomFace) {
     Cube *cube = malloc(sizeof(Cube));
 
@@ -80,4 +127,52 @@ const char *cubeToString(const Cube *cube) {
     }
 
     return buffer;
+}
+
+Cube *rotateCubeTopFaceClockwise(const Cube *cube, int count) {
+    Cube *rotatedCube;
+    CubeFace *rotatedTopFace;
+
+    if (cube == NULL) {
+        return NULL;
+    }
+
+    rotatedCube = cloneCube(cube);
+    if (rotatedCube == NULL) {
+        return NULL;
+    }
+
+    rotatedTopFace = rotateClubFaceClockwise(cube->topFace, count);
+    if (rotatedTopFace == NULL) {
+        freeCubeInternal(rotatedCube);
+        return NULL;
+    }
+
+    free(rotatedCube->topFace);
+    rotatedCube->topFace = rotatedTopFace;
+    return rotatedCube;
+}
+
+Cube *rotateCubeBottomFaceClockwise(const Cube *cube, int count) {
+    Cube *rotatedCube;
+    CubeFace *rotatedBottomFace;
+
+    if (cube == NULL) {
+        return NULL;
+    }
+
+    rotatedCube = cloneCube(cube);
+    if (rotatedCube == NULL) {
+        return NULL;
+    }
+
+    rotatedBottomFace = rotateClubFaceClockwise(cube->bottomFace, count);
+    if (rotatedBottomFace == NULL) {
+        freeCubeInternal(rotatedCube);
+        return NULL;
+    }
+
+    free(rotatedCube->bottomFace);
+    rotatedCube->bottomFace = rotatedBottomFace;
+    return rotatedCube;
 }

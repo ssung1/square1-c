@@ -11,5 +11,6 @@ int main(void) {
         "goo wo woo wo woo wo woo wo"
     );
     printf("%s\n", cubeToString(cube));
+    printf("%s\n", cubeToString(rotateCubeTopFaceClockwise(cube, 1)));
     return 0;
 }

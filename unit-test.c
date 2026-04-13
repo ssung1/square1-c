@@ -313,6 +313,42 @@ int main(void) {
     const char *nullCubeStr = cubeToString(NULL);
     ++totalTests; passCount += assertNull("cubeToString NULL returns NULL", nullCubeStr);
 
+    /* --- rotateCubeTopFaceClockwise: returns rotated copy and keeps source unchanged --- */
+    Cube *topRotateSource = cubeFromString("wg rob", "wgb ro");
+    ++totalTests; passCount += assertNotNull("top rotate source cube not NULL", topRotateSource);
+    if (topRotateSource != NULL) {
+        Cube *topRotated = rotateCubeTopFaceClockwise(topRotateSource, 1);
+        ++totalTests; passCount += assertNotNull("top rotate returns cube", topRotated);
+        if (topRotated != NULL) {
+            ++totalTests; passCount += assertEqualInt("top rotated position updated", 1, topRotated->topFace->blocks[0].position);
+            ++totalTests; passCount += assertEqualInt("top source cube unchanged", 0, topRotateSource->topFace->blocks[0].position);
+            ++totalTests; passCount += assertEqualInt("top rotate keeps bottom unchanged", topRotateSource->bottomFace->blocks[0].position, topRotated->bottomFace->blocks[0].position);
+            freeCubeForTest(topRotated);
+        }
+        freeCubeForTest(topRotateSource);
+    }
+
+    /* --- rotateCubeBottomFaceClockwise: returns rotated copy and keeps source unchanged --- */
+    Cube *bottomRotateSource = cubeFromString("wg rob", "wgb ro");
+    ++totalTests; passCount += assertNotNull("bottom rotate source cube not NULL", bottomRotateSource);
+    if (bottomRotateSource != NULL) {
+        Cube *bottomRotated = rotateCubeBottomFaceClockwise(bottomRotateSource, 2);
+        ++totalTests; passCount += assertNotNull("bottom rotate returns cube", bottomRotated);
+        if (bottomRotated != NULL) {
+            ++totalTests; passCount += assertEqualInt("bottom rotated position updated", 2, bottomRotated->bottomFace->blocks[0].position);
+            ++totalTests; passCount += assertEqualInt("bottom source cube unchanged", 0, bottomRotateSource->bottomFace->blocks[0].position);
+            ++totalTests; passCount += assertEqualInt("bottom rotate keeps top unchanged", bottomRotateSource->topFace->blocks[0].position, bottomRotated->topFace->blocks[0].position);
+            freeCubeForTest(bottomRotated);
+        }
+        freeCubeForTest(bottomRotateSource);
+    }
+
+    /* --- immutable cube rotation APIs: NULL input returns NULL --- */
+    Cube *nullTopRotate = rotateCubeTopFaceClockwise(NULL, 1);
+    ++totalTests; passCount += assertNull("rotateCubeTopFaceClockwise NULL returns NULL", nullTopRotate);
+    Cube *nullBottomRotate = rotateCubeBottomFaceClockwise(NULL, 1);
+    ++totalTests; passCount += assertNull("rotateCubeBottomFaceClockwise NULL returns NULL", nullBottomRotate);
+
     printf("\n%d/%d tests passed\n", passCount, totalTests);
 
     return (passCount == totalTests) ? 0 : 1;
