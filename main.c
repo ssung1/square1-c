@@ -10,6 +10,6 @@ int main(void) {
         "woo wo woo wo woo wo woo wo",
         "goo go goo go goo go goo go"
     );
-    printf("%s\n", cubeToString(flip(cube)));
+    printf("%s\n", cubeToString(operate(cube, "b0")));
     return 0;
 }

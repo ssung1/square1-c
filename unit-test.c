@@ -553,6 +553,17 @@ int main(void) {
     Cube *nullFlip = flip(NULL);
     ++totalTests; passCount += assertNull("flip NULL returns NULL", nullFlip);
 
+    /* --- flip: non-flippable cube returns NULL --- */
+    Cube *nonFlippableFlipSource = cubeFromString(
+        "wg wg wg wg wg wgb",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("flip non-flippable source not NULL", nonFlippableFlipSource);
+    if (nonFlippableFlipSource != NULL) {
+        Cube *nonFlippableFlipResult = flip(nonFlippableFlipSource);
+        ++totalTests; passCount += assertNull("flip non-flippable returns NULL", nonFlippableFlipResult);
+        freeCubeForTest(nonFlippableFlipSource);
+    }
+
     /* --- operate: 1-char token rotates top only --- */
     Cube *operateTopSource = cubeFromString(
         "rg wg wg wg wg wg wg wg wg wg wg wg",
@@ -619,6 +630,37 @@ int main(void) {
             freeCubeForTest(operateFlipResult);
         }
         freeCubeForTest(operateFlipSource);
+    }
+
+    /* --- operate: non-flippable flip token is a no-op and does not fail --- */
+    Cube *operateNonFlippableSource = cubeFromString(
+        "wg wg wg wg wg wgb",
+        "yo bo bo bo bo bo bo bo bo bo bo bo");
+    ++totalTests; passCount += assertNotNull("operate non-flippable source not NULL", operateNonFlippableSource);
+    if (operateNonFlippableSource != NULL) {
+        Cube *operateNonFlippableResult = operate(operateNonFlippableSource, "00 ");
+        ++totalTests; passCount += assertNotNull("operate non-flippable flip token does not fail", operateNonFlippableResult);
+        if (operateNonFlippableResult != NULL) {
+            const char *resultTop = cubeFaceToString(operateNonFlippableResult->topFace);
+            const char *resultBottom = cubeFaceToString(operateNonFlippableResult->bottomFace);
+            const char *sourceTop = cubeFaceToString(operateNonFlippableSource->topFace);
+            const char *sourceBottom = cubeFaceToString(operateNonFlippableSource->bottomFace);
+
+            ++totalTests; passCount += assertNotNull("operate non-flippable result top string not NULL", resultTop);
+            ++totalTests; passCount += assertNotNull("operate non-flippable result bottom string not NULL", resultBottom);
+            ++totalTests; passCount += assertNotNull("operate non-flippable source top string not NULL", sourceTop);
+            ++totalTests; passCount += assertNotNull("operate non-flippable source bottom string not NULL", sourceBottom);
+
+            if (resultTop != NULL && sourceTop != NULL) {
+                ++totalTests; passCount += assertEqual("operate non-flippable top unchanged", sourceTop, resultTop);
+            }
+            if (resultBottom != NULL && sourceBottom != NULL) {
+                ++totalTests; passCount += assertEqual("operate non-flippable bottom unchanged", sourceBottom, resultBottom);
+            }
+
+            freeCubeForTest(operateNonFlippableResult);
+        }
+        freeCubeForTest(operateNonFlippableSource);
     }
 
     /* --- operate: invalid token characters return NULL --- */

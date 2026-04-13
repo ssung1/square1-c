@@ -325,6 +325,10 @@ Cube *flip(const Cube *cube) {
         return NULL;
     }
 
+    if (!isFlippable(cube)) {
+        return NULL;
+    }
+
     flippedCube = malloc(sizeof(Cube));
     if (flippedCube == NULL) {
         return NULL;
@@ -414,13 +418,15 @@ Cube *operate(const Cube *cube, const char *ops) {
                 return NULL;
             }
 
-            next = flip(current);
-            if (next == NULL) {
+            if (isFlippable(current)) {
+                next = flip(current);
+                if (next == NULL) {
+                    freeCubeInternal(current);
+                    return NULL;
+                }
                 freeCubeInternal(current);
-                return NULL;
+                current = next;
             }
-            freeCubeInternal(current);
-            current = next;
         }
     }
 
