@@ -12,6 +12,7 @@ typedef struct {
     const BlockColor *sideColor2;
 } Block;
 
+int blockFromString(const char *token, int position, Block *block, BlockColor *sideColor2Storage);
 const char *blockToString(const Block *block);
 
 #endif
