@@ -1,11 +1,11 @@
 ## ADDED Requirements
 
-### Requirement: Project SHALL provide CubeFace counterclockwise rotation
-The project SHALL provide a CubeFace rotation function that updates each block position counterclockwise by a caller-provided count.
+### Requirement: Project SHALL provide CubeFace clockwise rotation
+The project SHALL provide a CubeFace rotation function that updates each block position clockwise by a caller-provided count.
 
 #### Scenario: Rotation function is available to callers
 - **WHEN** a developer includes the CubeFace interface and links project sources
-- **THEN** a CubeFace counterclockwise rotation function can be called on an existing CubeFace
+- **THEN** a CubeFace clockwise rotation function can be called on an existing CubeFace
 
 ### Requirement: Rotation SHALL wrap positions on a 12-slot ring
 When rotating, each block position SHALL be transformed by adding the rotation count and normalizing with modulo-12 semantics so the resulting value remains in the range `0..11`.

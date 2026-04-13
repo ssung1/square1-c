@@ -104,7 +104,7 @@ CubeFace *cubeFaceFromString(const char *definition) {
     return face;
 }
 
-CubeFace *rotateCubeFaceCounterclockwise(const CubeFace *face, int count) {
+CubeFace *rotateClubFaceClockwise(const CubeFace *face, int count) {
     if (face == NULL) {
         return NULL;
     }
