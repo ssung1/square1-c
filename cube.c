@@ -26,7 +26,7 @@ static int normalizePosition(int position) {
     return normalized;
 }
 
-static void freeCubeInternal(Cube *cube) {
+void freeCube(Cube *cube) {
     if (cube == NULL) {
         return;
     }
@@ -154,7 +154,7 @@ Cube *rotateCubeTopFaceClockwise(const Cube *cube, int count) {
 
     rotatedTopFace = rotateClubFaceClockwise(cube->topFace, count);
     if (rotatedTopFace == NULL) {
-        freeCubeInternal(rotatedCube);
+        freeCube(rotatedCube);
         return NULL;
     }
 
@@ -178,7 +178,7 @@ Cube *rotateCubeBottomFaceClockwise(const Cube *cube, int count) {
 
     rotatedBottomFace = rotateClubFaceClockwise(cube->bottomFace, count);
     if (rotatedBottomFace == NULL) {
-        freeCubeInternal(rotatedCube);
+        freeCube(rotatedCube);
         return NULL;
     }
 
@@ -383,48 +383,48 @@ Cube *operate(const Cube *cube, const char *ops) {
         }
 
         if (!decodeRotationChar(ops[i], &topRotation)) {
-            freeCubeInternal(current);
+            freeCube(current);
             return NULL;
         }
 
         next = rotateCubeTopFaceClockwise(current, topRotation);
         if (next == NULL) {
-            freeCubeInternal(current);
+            freeCube(current);
             return NULL;
         }
-        freeCubeInternal(current);
+        freeCube(current);
         current = next;
 
         if (tokenLen >= 2) {
             int bottomRotation;
 
             if (!decodeRotationChar(ops[i + 1], &bottomRotation)) {
-                freeCubeInternal(current);
+                freeCube(current);
                 return NULL;
             }
 
             next = rotateCubeBottomFaceClockwise(current, bottomRotation);
             if (next == NULL) {
-                freeCubeInternal(current);
+                freeCube(current);
                 return NULL;
             }
-            freeCubeInternal(current);
+            freeCube(current);
             current = next;
         }
 
         if (tokenLen == 3) {
             if (ops[i + 2] != ' ') {
-                freeCubeInternal(current);
+                freeCube(current);
                 return NULL;
             }
 
             if (isFlippable(current)) {
                 next = flip(current);
                 if (next == NULL) {
-                    freeCubeInternal(current);
+                    freeCube(current);
                     return NULL;
                 }
-                freeCubeInternal(current);
+                freeCube(current);
                 current = next;
             }
         }
@@ -436,7 +436,7 @@ Cube *operate(const Cube *cube, const char *ops) {
         char *newHistory = malloc(baseLen + opsLen + 1);
 
         if (newHistory == NULL) {
-            freeCubeInternal(current);
+            freeCube(current);
             return NULL;
         }
 

@@ -19,17 +19,6 @@ static char *duplicateStringForTest(const char *text) {
     return copy;
 }
 
-static void freeCubeForTest(Cube *cube) {
-    if (cube == NULL) {
-        return;
-    }
-
-    free(cube->topFace);
-    free(cube->bottomFace);
-    free(cube->history);
-    free(cube);
-}
-
 static int assertEqual(const char *name, const char *expected, const char *actual) {
     if (strcmp(expected, actual) == 0) {
         printf("PASS: %s\n", name);
@@ -298,7 +287,7 @@ int main(void) {
             ++totalTests; passCount += assertEqual("cube history initialized empty", "", cube->history);
         }
 
-        freeCubeForTest(cube);
+        freeCube(cube);
     }
 
     /* --- cubeFromString: invalid face input returns NULL --- */
@@ -322,7 +311,7 @@ int main(void) {
             }
         }
 
-        freeCubeForTest(cubeForString);
+        freeCube(cubeForString);
     }
 
     /* --- cubeToString: NULL cube returns NULL --- */
@@ -339,9 +328,9 @@ int main(void) {
             ++totalTests; passCount += assertEqualInt("top rotated position updated", 1, topRotated->topFace->blocks[0].position);
             ++totalTests; passCount += assertEqualInt("top source cube unchanged", 0, topRotateSource->topFace->blocks[0].position);
             ++totalTests; passCount += assertEqualInt("top rotate keeps bottom unchanged", topRotateSource->bottomFace->blocks[0].position, topRotated->bottomFace->blocks[0].position);
-            freeCubeForTest(topRotated);
+            freeCube(topRotated);
         }
-        freeCubeForTest(topRotateSource);
+        freeCube(topRotateSource);
     }
 
     /* --- rotateCubeBottomFaceClockwise: returns rotated copy and keeps source unchanged --- */
@@ -354,9 +343,9 @@ int main(void) {
             ++totalTests; passCount += assertEqualInt("bottom rotated position updated", 2, bottomRotated->bottomFace->blocks[0].position);
             ++totalTests; passCount += assertEqualInt("bottom source cube unchanged", 0, bottomRotateSource->bottomFace->blocks[0].position);
             ++totalTests; passCount += assertEqualInt("bottom rotate keeps top unchanged", bottomRotateSource->topFace->blocks[0].position, bottomRotated->topFace->blocks[0].position);
-            freeCubeForTest(bottomRotated);
+            freeCube(bottomRotated);
         }
-        freeCubeForTest(bottomRotateSource);
+        freeCube(bottomRotateSource);
     }
 
     /* --- immutable cube rotation APIs: NULL input returns NULL --- */
@@ -372,7 +361,7 @@ int main(void) {
     ++totalTests; passCount += assertNotNull("isFlippable cube not NULL", flippableCube);
     if (flippableCube != NULL) {
         ++totalTests; passCount += assertEqualInt("isFlippable both faces clean returns 1", 1, isFlippable(flippableCube));
-        freeCubeForTest(flippableCube);
+        freeCube(flippableCube);
     }
 
     /* --- isFlippable: top face has kite at position 11 (interior at 0) --- */
@@ -382,7 +371,7 @@ int main(void) {
     ++totalTests; passCount += assertNotNull("isFlippable kite-at-11 top cube not NULL", kitAt11TopCube);
     if (kitAt11TopCube != NULL) {
         ++totalTests; passCount += assertEqualInt("isFlippable top kite at 11 spanning 0 returns 0", 0, isFlippable(kitAt11TopCube));
-        freeCubeForTest(kitAt11TopCube);
+        freeCube(kitAt11TopCube);
     }
 
     /* --- isFlippable: top face has kite at position 5 (interior at 6) --- */
@@ -392,7 +381,7 @@ int main(void) {
     ++totalTests; passCount += assertNotNull("isFlippable kite-at-5 top cube not NULL", kiteAt5TopCube);
     if (kiteAt5TopCube != NULL) {
         ++totalTests; passCount += assertEqualInt("isFlippable top kite at 5 spanning 6 returns 0", 0, isFlippable(kiteAt5TopCube));
-        freeCubeForTest(kiteAt5TopCube);
+        freeCube(kiteAt5TopCube);
     }
 
     /* --- isFlippable: top face flippable, bottom face has kite at position 11 --- */
@@ -402,7 +391,7 @@ int main(void) {
     ++totalTests; passCount += assertNotNull("isFlippable bottom-not-flippable cube not NULL", bottomNotFlippable);
     if (bottomNotFlippable != NULL) {
         ++totalTests; passCount += assertEqualInt("isFlippable bottom kite at 11 returns 0", 0, isFlippable(bottomNotFlippable));
-        freeCubeForTest(bottomNotFlippable);
+        freeCube(bottomNotFlippable);
     }
 
     /* --- isFlippable: NULL cube returns 0 --- */
@@ -468,9 +457,9 @@ int main(void) {
                 ++totalTests; passCount += assertEqualInt("flip triangle moved block face color preserved", BLOCK_COLOR_RED, movedTriangle->faceColor);
                 ++totalTests; passCount += assertEqualGeometry("flip triangle moved block remains triangle", GEOMETRY_TRIANGLE, movedTriangle->shape.geometry);
             }
-            freeCubeForTest(flipTriangleResult);
+            freeCube(flipTriangleResult);
         }
-        freeCubeForTest(flipTriangleSource);
+        freeCube(flipTriangleSource);
     }
 
     /* --- flip: right-half kite at top position 0 moves to bottom position 4 --- */
@@ -488,9 +477,9 @@ int main(void) {
                 ++totalTests; passCount += assertEqualGeometry("flip kite moved block remains kite", GEOMETRY_KITE, movedKite->shape.geometry);
                 ++totalTests; passCount += assertEqualInt("flip kite moved block sideColor2 preserved", BLOCK_COLOR_BLUE, (movedKite->sideColor2 != NULL) ? *movedKite->sideColor2 : -1);
             }
-            freeCubeForTest(flipKiteResult);
+            freeCube(flipKiteResult);
         }
-        freeCubeForTest(flipKiteSource);
+        freeCube(flipKiteSource);
     }
 
     /* --- flip: right-half blocks from bottom move to top with reflected position --- */
@@ -507,9 +496,9 @@ int main(void) {
             if (movedFromBottom != NULL) {
                 ++totalTests; passCount += assertEqualInt("flip block from bottom face color preserved", BLOCK_COLOR_YELLOW, movedFromBottom->faceColor);
             }
-            freeCubeForTest(bottomToTopResult);
+            freeCube(bottomToTopResult);
         }
-        freeCubeForTest(bottomToTopSource);
+        freeCube(bottomToTopSource);
     }
 
     /* --- flip: left-half blocks remain on original face unchanged --- */
@@ -526,9 +515,9 @@ int main(void) {
             if (leftBlock != NULL) {
                 ++totalTests; passCount += assertEqualInt("flip left-half block color unchanged", BLOCK_COLOR_RED, leftBlock->faceColor);
             }
-            freeCubeForTest(leftHalfResult);
+            freeCube(leftHalfResult);
         }
-        freeCubeForTest(leftHalfSource);
+        freeCube(leftHalfSource);
     }
 
     /* --- flip: source cube remains unchanged --- */
@@ -544,9 +533,9 @@ int main(void) {
         if (immutResult != NULL) {
             ++totalTests; passCount += assertEqualInt("flip immutability source top pos unchanged", sourceTopPos, immutSource->topFace->blocks[0].position);
             ++totalTests; passCount += assertEqualInt("flip immutability source top color unchanged", sourceTopColor, immutSource->topFace->blocks[0].faceColor);
-            freeCubeForTest(immutResult);
+            freeCube(immutResult);
         }
-        freeCubeForTest(immutSource);
+        freeCube(immutSource);
     }
 
     /* --- flip: NULL input returns NULL --- */
@@ -561,7 +550,7 @@ int main(void) {
     if (nonFlippableFlipSource != NULL) {
         Cube *nonFlippableFlipResult = flip(nonFlippableFlipSource);
         ++totalTests; passCount += assertNull("flip non-flippable returns NULL", nonFlippableFlipResult);
-        freeCubeForTest(nonFlippableFlipSource);
+        freeCube(nonFlippableFlipSource);
     }
 
     /* --- operate: 1-char token rotates top only --- */
@@ -579,9 +568,9 @@ int main(void) {
                 ++totalTests; passCount += assertEqualInt("operate top-only preserves top block color", BLOCK_COLOR_RED, rotatedTop->faceColor);
             }
             ++totalTests; passCount += assertEqualInt("operate top-only bottom unchanged", 0, operateTopResult->bottomFace->blocks[0].position);
-            freeCubeForTest(operateTopResult);
+            freeCube(operateTopResult);
         }
-        freeCubeForTest(operateTopSource);
+        freeCube(operateTopSource);
     }
 
     /* --- operate: 2-char token rotates top and bottom only --- */
@@ -603,9 +592,9 @@ int main(void) {
             if (bottomAt2 != NULL) {
                 ++totalTests; passCount += assertEqualInt("operate two-char bottom color preserved", BLOCK_COLOR_YELLOW, bottomAt2->faceColor);
             }
-            freeCubeForTest(operateTwoResult);
+            freeCube(operateTwoResult);
         }
-        freeCubeForTest(operateTwoSource);
+        freeCube(operateTwoSource);
     }
 
     /* --- operate: 3-char token applies flip when third char is space --- */
@@ -627,9 +616,9 @@ int main(void) {
             if (bottomFromTop != NULL) {
                 ++totalTests; passCount += assertEqualInt("operate flip bottom received top color", BLOCK_COLOR_RED, bottomFromTop->faceColor);
             }
-            freeCubeForTest(operateFlipResult);
+            freeCube(operateFlipResult);
         }
-        freeCubeForTest(operateFlipSource);
+        freeCube(operateFlipSource);
     }
 
     /* --- operate: non-flippable flip token is a no-op and does not fail --- */
@@ -658,9 +647,9 @@ int main(void) {
                 ++totalTests; passCount += assertEqual("operate non-flippable bottom unchanged", sourceBottom, resultBottom);
             }
 
-            freeCubeForTest(operateNonFlippableResult);
+            freeCube(operateNonFlippableResult);
         }
-        freeCubeForTest(operateNonFlippableSource);
+        freeCube(operateNonFlippableSource);
     }
 
     /* --- operate: invalid token characters return NULL --- */
@@ -675,7 +664,7 @@ int main(void) {
         ++totalTests; passCount += assertNull("operate invalid top char returns NULL", invalidTop);
         ++totalTests; passCount += assertNull("operate invalid bottom char returns NULL", invalidBottom);
         ++totalTests; passCount += assertNull("operate invalid third char returns NULL", invalidThird);
-        freeCubeForTest(operateInvalidSource);
+        freeCube(operateInvalidSource);
     }
 
     /* --- operate: source cube unchanged after operate --- */
@@ -698,10 +687,10 @@ int main(void) {
                 ++totalTests; passCount += assertEqualInt("operate source top unchanged", sourceTopPos, operateImmutSource->topFace->blocks[0].position);
                 ++totalTests; passCount += assertEqualInt("operate source bottom unchanged", sourceBottomPos, operateImmutSource->bottomFace->blocks[0].position);
                 ++totalTests; passCount += assertEqual("operate source history unchanged", "U", operateImmutSource->history);
-                freeCubeForTest(operateImmutResult);
+                freeCube(operateImmutResult);
             }
         }
-        freeCubeForTest(operateImmutSource);
+        freeCube(operateImmutSource);
     }
 
     /* --- operate: history appends operation string --- */
@@ -720,10 +709,10 @@ int main(void) {
             ++totalTests; passCount += assertNotNull("operate history result not NULL", operateHistoryResult);
             if (operateHistoryResult != NULL) {
                 ++totalTests; passCount += assertEqual("operate history appended", "U1a ", operateHistoryResult->history);
-                freeCubeForTest(operateHistoryResult);
+                freeCube(operateHistoryResult);
             }
         }
-        freeCubeForTest(operateHistorySource);
+        freeCube(operateHistorySource);
     }
 
     /* --- operate: NULL cube or NULL ops returns NULL --- */
@@ -736,7 +725,7 @@ int main(void) {
         Cube *nullOpsResult = operate(operateNullSource, NULL);
         ++totalTests; passCount += assertNull("operate NULL cube returns NULL", nullCubeResult);
         ++totalTests; passCount += assertNull("operate NULL ops returns NULL", nullOpsResult);
-        freeCubeForTest(operateNullSource);
+        freeCube(operateNullSource);
     }
 
     printf("\n%d/%d tests passed\n", passCount, totalTests);
